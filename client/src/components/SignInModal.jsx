@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
-import { useNavigate } from 'react-router-dom';
 
-const SignInModal = ({ open, onClose }) => {
+const SignInModal = ({ open, onClose, onSignIn }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,16 +17,10 @@ const SignInModal = ({ open, onClose }) => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Sign in failed');
-      // Save token and user info
-      localStorage.setItem('user', JSON.stringify(data));
-      setTimeout(() => {
-        onClose();
-        if (data.role === 'farmer') {
-          navigate('/farmer-portal');
-        } else if (data.role === 'government') {
-          navigate('/government-portal');
-        }
-      }, 500);
+      // Save token to localStorage
+      localStorage.setItem('token', data.token);
+      // Pass user data to parent component
+      onSignIn(data.user);
     } catch (err) {
       setError(err.message);
     }
