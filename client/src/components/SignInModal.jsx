@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
 
-const SignInModal = ({ open, onClose }) => {
+const SignInModal = ({ open, onClose, onSignIn }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -17,8 +17,10 @@ const SignInModal = ({ open, onClose }) => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Sign in failed');
-      // Save token or user info as needed
-      onClose();
+      // Save token to localStorage
+      localStorage.setItem('token', data.token);
+      // Pass user data to parent component
+      onSignIn(data.user);
     } catch (err) {
       setError(err.message);
     }

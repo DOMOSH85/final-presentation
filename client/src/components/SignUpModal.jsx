@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
 
-const SignUpModal = ({ open, onClose }) => {
+const SignUpModal = ({ open, onClose, onShowSignIn }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,7 +21,18 @@ const SignUpModal = ({ open, onClose }) => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Sign up failed');
-      setSuccess('Account created! You can now sign in.');
+      setSuccess('Account created! Redirecting...');
+      setTimeout(() => {
+        setSuccess('');
+        onClose();
+        if (data.role === 'farmer') {
+          window.location.href = '/farmer-portal';
+        } else if (data.role === 'government') {
+          window.location.href = '/government-portal';
+        } else if (onShowSignIn) {
+          onShowSignIn();
+        }
+      }, 1200);
       setName(''); setEmail(''); setPassword(''); setRole('farmer');
     } catch (err) {
       setError(err.message);
