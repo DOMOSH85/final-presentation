@@ -5,7 +5,8 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const testimonialRoutes = require('./routes/testimonials');
 const newsletterRoutes = require('./routes/newsletter');
-const protectedRoutes = require('./routes/protected');
+const farmerRoutes = require('./routes/farmer');
+const governmentRoutes = require('./routes/government');
 require('dotenv').config();
 
 const app = express();
@@ -17,7 +18,8 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/newsletter', newsletterRoutes);
-app.use('/api/protected', protectedRoutes);
+app.use('/api/farmer', farmerRoutes);
+app.use('/api/government', governmentRoutes);
 
 const PORT = process.env.PORT || 5000;
 
