@@ -1,33 +1,12 @@
-import React, { useState } from 'react';
-
-import Navbar from './components/Navbar';
-import SignInModal from './components/SignInModal';
-import SignUpModal from './components/SignUpModal';
-import DescriptionSection from './components/DescriptionSection';
-import ServiceCards from './components/ServiceCards';
-import CTASection from './components/CTASection';
-import TestimonialSection from './components/TestimonialSection';
-import NewsletterSection from './components/NewsletterSection';
-import Footer from './components/Footer';
+import React from 'react';
+import AppRouter from './AppRouter';
+import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
-  const [showSignIn, setShowSignIn] = useState(false);
-  const [showSignUp, setShowSignUp] = useState(false);
-
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-green-100">
-      <Navbar onSignIn={() => setShowSignIn(true)} onSignUp={() => setShowSignUp(true)} />
-      <main className="flex-1 px-4 py-12 max-w-5xl mx-auto text-center">
-        <DescriptionSection />
-        <ServiceCards />
-        <CTASection onSignUp={() => setShowSignUp(true)} />
-        <TestimonialSection />
-        <NewsletterSection />
-      </main>
-      <Footer />
-      <SignInModal open={showSignIn} onClose={() => setShowSignIn(false)} />
-      <SignUpModal open={showSignUp} onClose={() => setShowSignUp(false)} />
-    </div>
+    <AuthProvider>
+      <AppRouter />
+    </AuthProvider>
   );
 }
 

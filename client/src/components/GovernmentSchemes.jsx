@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useApi from '../hooks/useApi';
+import { useAuth } from '../contexts/AuthContext';
 
-const GovernmentSchemes = ({ user }) => {
+const GovernmentSchemes = () => {
+  const { signOut } = useAuth();
   const navigate = useNavigate();
-  const [schemes, setSchemes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: schemes, loading, error, refetch } = useApi('/api/government/schemes');
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -14,29 +16,6 @@ const GovernmentSchemes = ({ user }) => {
     applicationProcess: '',
     deadline: ''
   });
-
-  useEffect(() => {
-    fetchSchemes();
-  }, []);
-
-  const fetchSchemes = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/government/schemes', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setSchemes(data);
-      } else {
-        console.error('Failed to fetch schemes');
-      }
-    } catch (err) {
-      console.error('Error fetching schemes:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleInputChange = (e) => {
     setFormData({
@@ -59,7 +38,7 @@ const GovernmentSchemes = ({ user }) => {
       });
       const data = await res.json();
       if (res.ok) {
-        setSchemes([...schemes, data]);
+        refetch(); // Refresh the schemes list
         setFormData({
           title: '',
           description: '',
@@ -70,7 +49,7 @@ const GovernmentSchemes = ({ user }) => {
         });
         setShowAddForm(false);
       } else {
-        console.error('Failed to add scheme');
+        console.error('Failed to add scheme:', data.message);
       }
     } catch (err) {
       console.error('Error adding scheme:', err);
@@ -87,9 +66,10 @@ const GovernmentSchemes = ({ user }) => {
         }
       });
       if (res.ok) {
-        setSchemes(schemes.filter(scheme => scheme._id !== id));
+        refetch(); // Refresh the schemes list
       } else {
-        console.error('Failed to delete scheme');
+        const data = await res.json();
+        console.error('Failed to delete scheme:', data.message);
       }
     } catch (err) {
       console.error('Error deleting scheme:', err);
@@ -109,11 +89,9 @@ const GovernmentSchemes = ({ user }) => {
       });
       const data = await res.json();
       if (res.ok) {
-        setSchemes(schemes.map(scheme => 
-          scheme._id === id ? { ...scheme, isActive: data.isActive } : scheme
-        ));
+        refetch(); // Refresh the schemes list
       } else {
-        console.error('Failed to update scheme status');
+        console.error('Failed to update scheme status:', data.message);
       }
     } catch (err) {
       console.error('Error updating scheme status:', err);
@@ -124,6 +102,14 @@ const GovernmentSchemes = ({ user }) => {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-xl">Loading schemes...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-xl text-red-600">Error: {error}</div>
       </div>
     );
   }

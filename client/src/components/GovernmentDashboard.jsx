@@ -1,36 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import useApi from '../hooks/useApi';
+import { useAuth } from '../contexts/AuthContext';
 
-const GovernmentDashboard = ({ user }) => {
+const GovernmentDashboard = () => {
+  const { signOut } = useAuth();
   const navigate = useNavigate();
-  const [dashboardData, setDashboardData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch('/api/government/dashboard', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (res.ok) {
-          setDashboardData(data);
-        } else {
-          console.error('Failed to fetch dashboard data');
-        }
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
+  const { data: dashboardData, loading, error } = useApi('/api/government/dashboard');
 
   const handleSignOut = () => {
-    localStorage.removeItem('token');
+    signOut();
     navigate('/');
   };
 
@@ -38,6 +17,14 @@ const GovernmentDashboard = ({ user }) => {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-xl">Loading dashboard...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-xl text-red-600">Error: {error}</div>
       </div>
     );
   }

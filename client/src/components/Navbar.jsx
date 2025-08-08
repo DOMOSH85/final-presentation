@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
-const Navbar = ({ user, onSignIn, onSignUp, onSignOut }) => {
+const Navbar = ({ onSignIn, onSignUp }) => {
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handlePortalNavigation = () => {
@@ -28,7 +30,7 @@ const Navbar = ({ user, onSignIn, onSignUp, onSignOut }) => {
               {user.role === 'farmer' ? 'Farmer Portal' : 'Government Portal'}
             </button>
             <button
-              onClick={onSignOut}
+              onClick={signOut}
               className="px-4 py-2 bg-white text-green-800 rounded hover:bg-green-100 transition"
             >
               Sign Out

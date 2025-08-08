@@ -1,42 +1,40 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
+import { useAuth } from '../contexts/AuthContext';
 
-const SignUpModal = ({ open, onClose, onShowSignIn }) => {
+const SignUpModal = ({ open, onClose }) => {
+  const { signUp } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('farmer');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     setError('');
     setSuccess('');
-    try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, role })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Sign up failed');
-      setSuccess('Account created! Redirecting...');
+    
+    const result = await signUp(name, email, password, role);
+    if (result.success) {
+      setSuccess('Account created successfully!');
+      // Clear form
+      setName('');
+      setEmail('');
+      setPassword('');
+      setRole('farmer');
+      // Close modal after a delay
       setTimeout(() => {
         setSuccess('');
         onClose();
-        if (data.role === 'farmer') {
-          window.location.href = '/farmer-portal';
-        } else if (data.role === 'government') {
-          window.location.href = '/government-portal';
-        } else if (onShowSignIn) {
-          onShowSignIn();
-        }
-      }, 1200);
-      setName(''); setEmail(''); setPassword(''); setRole('farmer');
-    } catch (err) {
-      setError(err.message);
+      }, 1500);
+    } else {
+      setError(result.message);
     }
+    setLoading(false);
   };
 
   return (

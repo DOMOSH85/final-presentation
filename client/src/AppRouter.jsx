@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
 
 import Navbar from './components/Navbar';
 import SignInModal from './components/SignInModal';
@@ -11,23 +12,26 @@ import TestimonialSection from './components/TestimonialSection';
 import NewsletterSection from './components/NewsletterSection';
 import Footer from './components/Footer';
 
-import FarmerDashboard from './components/FarmerDashboard';
-import FarmerCrops from './components/FarmerCrops';
-import GovernmentDashboard from './components/GovernmentDashboard';
-import GovernmentSchemes from './components/GovernmentSchemes';
+import FarmerPortal from './components/FarmerPortal';
+import GovernmentPortal from './components/GovernmentPortal';
 
 function AppRouter() {
+  const { user, signOut } = useAuth();
   const [showSignIn, setShowSignIn] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
-  const [user, setUser] = useState(null);
 
-  const handleSignIn = (userData) => {
-    setUser(userData);
+  const handleSignIn = () => {
     setShowSignIn(false);
+    // Redirect to appropriate dashboard based on user role
+    if (user?.role === 'farmer') {
+      window.location.href = '/farmer';
+    } else if (user?.role === 'government') {
+      window.location.href = '/government';
+    }
   };
 
   const handleSignOut = () => {
-    setUser(null);
+    signOut();
   };
 
   return (
@@ -37,7 +41,6 @@ function AppRouter() {
           user={user}
           onSignIn={() => setShowSignIn(true)}
           onSignUp={() => setShowSignUp(true)}
-          onSignOut={handleSignOut}
         />
         <Routes>
           <Route path="/" element={
@@ -52,13 +55,13 @@ function AppRouter() {
           
           <Route path="/farmer/*" element={
             user && user.role === 'farmer' ?
-            <FarmerRoutes user={user} /> :
+            <FarmerPortal /> :
             <Navigate to="/" />
           } />
           
           <Route path="/government/*" element={
             user && user.role === 'government' ?
-            <GovernmentRoutes user={user} /> :
+            <GovernmentPortal /> :
             <Navigate to="/" />
           } />
         </Routes>
@@ -66,7 +69,6 @@ function AppRouter() {
         <SignInModal
           open={showSignIn}
           onClose={() => setShowSignIn(false)}
-          onSignIn={handleSignIn}
         />
         <SignUpModal
           open={showSignUp}
@@ -74,26 +76,6 @@ function AppRouter() {
         />
       </div>
     </Router>
-  );
-}
-
-function FarmerRoutes({ user }) {
-  return (
-    <Routes>
-      <Route path="/" element={<FarmerDashboard user={user} />} />
-      <Route path="/dashboard" element={<FarmerDashboard user={user} />} />
-      <Route path="/crops" element={<FarmerCrops user={user} />} />
-    </Routes>
-  );
-}
-
-function GovernmentRoutes({ user }) {
-  return (
-    <Routes>
-      <Route path="/" element={<GovernmentDashboard user={user} />} />
-      <Route path="/dashboard" element={<GovernmentDashboard user={user} />} />
-      <Route path="/schemes" element={<GovernmentSchemes user={user} />} />
-    </Routes>
   );
 }
 

@@ -1,29 +1,26 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
+import { useAuth } from '../contexts/AuthContext';
 
-const SignInModal = ({ open, onClose, onSignIn }) => {
+const SignInModal = ({ open, onClose }) => {
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     setError('');
-    try {
-      const res = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Sign in failed');
-      // Save token to localStorage
-      localStorage.setItem('token', data.token);
-      // Pass user data to parent component
-      onSignIn(data.user);
-    } catch (err) {
-      setError(err.message);
+    
+    const result = await signIn(email, password);
+    if (result.success) {
+      onClose();
+    } else {
+      setError(result.message);
     }
+    setLoading(false);
   };
 
   return (

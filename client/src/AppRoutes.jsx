@@ -13,6 +13,7 @@ import Footer from './components/Footer';
 
 import FarmerDashboard from './components/FarmerDashboard';
 import FarmerCrops from './components/FarmerCrops';
+import FarmerSchemes from './components/FarmerSchemes';
 import GovernmentDashboard from './components/GovernmentDashboard';
 import GovernmentSchemes from './components/GovernmentSchemes';
 
@@ -24,6 +25,13 @@ function AppRouter() {
   const handleSignIn = (userData) => {
     setUser(userData);
     setShowSignIn(false);
+    
+    // Redirect to the appropriate portal based on user role
+    if (userData.role === 'farmer') {
+      window.location.href = '/farmer';
+    } else if (userData.role === 'government') {
+      window.location.href = '/government';
+    }
   };
 
   const handleSignOut = () => {
@@ -83,6 +91,7 @@ function FarmerRoutes({ user }) {
       <Route path="/" element={<FarmerDashboard user={user} />} />
       <Route path="/dashboard" element={<FarmerDashboard user={user} />} />
       <Route path="/crops" element={<FarmerCrops user={user} />} />
+      <Route path="/schemes" element={<FarmerSchemes user={user} />} />
     </Routes>
   );
 }

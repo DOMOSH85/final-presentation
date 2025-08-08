@@ -3,18 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import useApi from '../hooks/useApi';
 import { useAuth } from '../contexts/AuthContext';
 
-const FarmerCrops = () => {
+const GovernmentPrices = () => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
-  const { data: crops, loading, error, refetch } = useApi('/api/farmer/crops');
+  const { data: prices, loading, error, refetch } = useApi('/api/government/prices');
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    variety: '',
-    plantingDate: '',
-    area: '',
-    expectedYield: ''
+    cropName: '',
+    price: '',
+    unit: 'kg',
+    location: ''
   });
+
+  const handleSignOut = () => {
+    signOut();
+    navigate('/');
+  };
 
   const handleInputChange = (e) => {
     setFormData({
@@ -27,7 +31,7 @@ const FarmerCrops = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/farmer/crops', {
+      const res = await fetch('/api/government/prices', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -37,47 +41,46 @@ const FarmerCrops = () => {
       });
       const data = await res.json();
       if (res.ok) {
-        refetch(); // Refresh the crops list
+        refetch(); // Refresh the prices list
         setFormData({
-          name: '',
-          variety: '',
-          plantingDate: '',
-          area: '',
-          expectedYield: ''
+          cropName: '',
+          price: '',
+          unit: 'kg',
+          location: ''
         });
         setShowAddForm(false);
       } else {
-        console.error('Failed to add crop:', data.message);
+        console.error('Failed to add price:', data.message);
       }
     } catch (err) {
-      console.error('Error adding crop:', err);
+      console.error('Error adding price:', err);
     }
   };
 
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/farmer/crops/${id}`, {
+      const res = await fetch(`/api/government/prices/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       if (res.ok) {
-        refetch(); // Refresh the crops list
+        refetch(); // Refresh the prices list
       } else {
         const data = await res.json();
-        console.error('Failed to delete crop:', data.message);
+        console.error('Failed to delete price:', data.message);
       }
     } catch (err) {
-      console.error('Error deleting crop:', err);
+      console.error('Error deleting price:', err);
     }
   };
 
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="text-xl">Loading crops...</div>
+        <div className="text-xl">Loading market prices...</div>
       </div>
     );
   }
@@ -93,70 +96,72 @@ const FarmerCrops = () => {
   return (
     <div className="flex-1 px-4 py-8 max-w-5xl mx-auto">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-green-800">My Crops</h1>
+        <h1 className="text-3xl font-bold text-green-800">Market Prices Management</h1>
+        <button 
+          onClick={handleSignOut}
+          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+        >
+          Sign Out
+        </button>
+      </div>
+
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-semibold">Market Prices</h2>
         <button 
           onClick={() => setShowAddForm(!showAddForm)}
           className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
         >
-          {showAddForm ? 'Cancel' : 'Add Crop'}
+          {showAddForm ? 'Cancel' : 'Add Price'}
         </button>
       </div>
 
       {showAddForm && (
         <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Add New Crop</h2>
+          <h2 className="text-2xl font-semibold mb-4">Add New Price</h2>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-gray-700 mb-2">Crop Name</label>
               <input
                 type="text"
-                name="name"
-                value={formData.name}
+                name="cropName"
+                value={formData.cropName}
                 onChange={handleInputChange}
                 required
                 className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-700"
               />
             </div>
             <div>
-              <label className="block text-gray-700 mb-2">Variety</label>
+              <label className="block text-gray-700 mb-2">Price</label>
+              <input
+                type="number"
+                name="price"
+                value={formData.price}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-700"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-2">Unit</label>
+              <select
+                name="unit"
+                value={formData.unit}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-700"
+              >
+                <option value="kg">kg</option>
+                <option value="ton">ton</option>
+                <option value="bunch">bunch</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-2">Location</label>
               <input
                 type="text"
-                name="variety"
-                value={formData.variety}
+                name="location"
+                value={formData.location}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-700"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 mb-2">Planting Date</label>
-              <input
-                type="date"
-                name="plantingDate"
-                value={formData.plantingDate}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-700"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 mb-2">Area (acres)</label>
-              <input
-                type="number"
-                name="area"
-                value={formData.area}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-700"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 mb-2">Expected Yield (kg)</label>
-              <input
-                type="number"
-                name="expectedYield"
-                value={formData.expectedYield}
-                onChange={handleInputChange}
                 className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-700"
               />
             </div>
@@ -165,7 +170,7 @@ const FarmerCrops = () => {
                 type="submit"
                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
               >
-                Add Crop
+                Add Price
               </button>
             </div>
           </form>
@@ -173,39 +178,29 @@ const FarmerCrops = () => {
       )}
 
       <div className="bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-2xl font-semibold mb-4">My Crops</h2>
-        {crops.length > 0 ? (
+        <h2 className="text-2xl font-semibold mb-4">All Market Prices</h2>
+        {prices && prices.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Crop</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Variety</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Planting Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area (acres)</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {crops.map((crop) => (
-                  <tr key={crop._id}>
-                    <td className="px-6 py-4 whitespace-nowrap">{crop.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{crop.variety}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{new Date(crop.plantingDate).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{crop.area}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        crop.status === 'planted' ? 'bg-yellow-100 text-yellow-800' :
-                        crop.status === 'growing' ? 'bg-blue-100 text-blue-800' :
-                        'bg-green-100 text-green-800'
-                      }`}>
-                        {crop.status}
-                      </span>
-                    </td>
+                {prices.map((price) => (
+                  <tr key={price._id}>
+                    <td className="px-6 py-4 whitespace-nowrap">{price.cropName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">KSh {price.price}/{price.unit}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{price.location}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{new Date(price.date).toLocaleDateString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
-                        onClick={() => handleDelete(crop._id)}
+                        onClick={() => handleDelete(price._id)}
                         className="text-red-600 hover:text-red-900"
                       >
                         Delete
@@ -217,11 +212,11 @@ const FarmerCrops = () => {
             </table>
           </div>
         ) : (
-          <p>No crops added yet</p>
+          <p>No market prices available</p>
         )}
       </div>
     </div>
   );
 };
 
-export default FarmerCrops;
+export default GovernmentPrices;
